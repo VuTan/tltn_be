@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Your Registration Code</title>
+  <style>
+    body {
+      font-family: 'Helvetica Neue', Arial, sans-serif;
+      background-color: #f9f9f9;
+      margin: 0;
+      padding: 20px;
+    }
+
+    .container {
+      background-color: #ffffff;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      padding: 40px;
+      max-width: 600px;
+      margin: auto;
+      text-align: center;
+    }
+
+    h1 {
+      color: #333;
+      font-size: 24px;
+      margin-bottom: 10px;
+    }
+
+    p {
+      color: #666;
+      line-height: 1.5;
+      margin: 10px 0;
+    }
+
+    .code {
+      background-color: #e1f5fe;
+      border: 1px solid #90caf9;
+      padding: 15px;
+      font-family: 'Courier New', monospace;
+      display: inline-block;
+      margin-top: 20px;
+      font-size: 20px;
+      color: #0277bd;
+      border-radius: 5px;
+    }
+
+    .footer {
+      margin-top: 30px;
+      font-size: 14px;
+      color: #999;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <h1>Hello {{name}},</h1>
+  <p>Thank you for registering with us! Your registration code is:</p>
+  <div class="code">{{activationCode}}</div>
+  <p>This code will expire in {{timeExpires}}. Please use it to complete your registration.</p>
+  <p>If you have any questions, feel free to reach out to our support team.</p>
+  <div class="footer">
+    <p>Best regards,</p>
+    <p>The E-commerce</p>
+  </div>
+</div>
+</body>
+</html>
