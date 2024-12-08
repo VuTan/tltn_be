@@ -9,7 +9,6 @@ import { CodeAuthDto, CreateAuthDto, ResetPasswordDto } from '@/auth/dto/create-
 import { v4 as uuidv4 } from 'uuid';
 import dayjs from 'dayjs';
 import { MailerService } from '@nestjs-modules/mailer';
-import { faker } from '@faker-js/faker';
 
 @Injectable()
 export class UsersService {
@@ -40,9 +39,62 @@ export class UsersService {
     return { _id: user._id };
   }
 
-  findAll() {
-    return `This action returns all users`;
+  async findAll(page: number, limit: number, sort: string, search: string) {
+    const skip = (page - 1) * limit;
+
+    const sortObject = this.parseSortParam(sort);
+
+    // Tạo query filter cho tìm kiếm
+    const filter: any = search
+      ? {
+        $or: [
+          { name: { $regex: search, $options: 'i' } },
+          { email: { $regex: search, $options: 'i' } },
+        ],
+      }
+      : {};
+    console.log(filter);
+
+    const [result, total] = await Promise.all([
+      this.userModel
+        .find(filter) // Áp dụng bộ lọc tìm kiếm
+        .skip(skip)
+        .limit(limit)
+        .sort(sortObject)
+        .exec(),
+      this.userModel.countDocuments(filter).exec(), // Đếm tổng số bản ghi khớp với tìm kiếm
+    ]);
+
+    const totalPages = Math.ceil(total / limit);
+
+    return {
+      users: result,
+      total,
+      totalPages,
+      currentPage: page,
+      limit,
+    };
   }
+
+
+  private parseSortParam(sort: string): Record<string, 1 | -1> {
+
+    const sortObject: Record<string, 1 | -1> = {};
+
+    if (sort) {
+      const sortPairs = sort.split('&'); // Tách các cặp bằng dấu `&`
+
+      for (const pair of sortPairs) {
+        const [field, direction] = pair.split(','); // Tách field và direction bằng dấu `,`
+        if (field && (direction === 'asc' || direction === 'desc')) {
+          sortObject[field] = direction === 'asc' ? 1 : -1;
+        }
+      }
+    }
+
+    return sortObject;
+  }
+
 
   findOne(id: number) {
     return `This action returns a #${id} user`;
@@ -226,7 +278,7 @@ export class UsersService {
 
   findRandomUser() {
     return this.userModel.aggregate([
-      { $sample: { size: 1 } } // Lấy ngẫu nhiên 1 sản phẩm
+      { $sample: { size: 1 } }, // Lấy ngẫu nhiên 1 sản phẩm
     ]);
   }
 }

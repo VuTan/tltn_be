@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
 import { SupplierService } from './supplier.service';
 import { CreateSupplierDto } from './dto/create-supplier.dto';
 import { SetActiveSupplierDto } from '@/modules/supplier/dto/set-active-supplier.dto';
@@ -37,5 +37,40 @@ export class SupplierController {
   @Patch('/add-product')
   async createProductFromSupplier(@Body() createProductFromSupplierDto: CreateProductFromSupplierDto) {
     return this.supplierService.createProductFromSupplier(createProductFromSupplierDto);
+  }
+
+  @Get(':user_id/products')
+  async getProductsBySupplier(
+    @Param('user_id') user_id: string,
+    @Query('page') page: number = 1,
+    @Query('limit') limit: number = 10,
+    @Query('sort') sort: string = 'createdAt,desc', // Mặc định sắp xếp theo createdAt giảm dần
+    @Query('search') search: string = '',
+  ) {
+    return this.supplierService.getProductsBySupplier(user_id, page, limit, sort, search);
+  }
+
+  // @Get('daily/:supplierId')
+  // async getDailyRevenue(
+  //   @Param('supplierId') supplierId: string,
+  //   @Query() query: { year: number; month: number; day: number },
+  // ) {
+  //   return this.revenueService.getDailyRevenueBySupplier(query, supplierId);
+  // }
+  //
+  // @Get('monthly/:supplierId')
+  // async getMonthlyRevenue(
+  //   @Param('supplierId') supplierId: string,
+  //   @Query() query: { year: number; month: number },
+  // ) {
+  //   return this.revenueService.getMonthlyRevenueBySupplier(query, supplierId);
+  // }
+
+  @Get('Year/:userId')
+  async getYearlyRevenue(
+    @Param('userId') userId: string,
+    @Query('year') year: number,
+  ) {
+    return this.supplierService.getYearlyRevenueBySupplier( userId,year);
   }
 }

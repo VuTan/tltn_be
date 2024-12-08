@@ -32,19 +32,19 @@ export class OrderController {
     return this.orderService.getRevenueByRange(start, end, groupBy);
   }
 
-  @Get('daily')
+  @Get('Hour')
   async getDailyRevenue(@Query() query: { day: string, month: string, year: string }) {
     return this.orderService.getDailyRevenue(query);
   }
 
   // // Lấy doanh thu theo tháng
-  @Get('monthly')
+  @Get('Day')
   async getMonthlyRevenue(@Query() query: { month: string, year: string }) {
     return this.orderService.getMonthlyRevenue(query);
   }
 
   // Lấy doanh thu theo năm
-  @Get('yearly')
+  @Get('Month')
   async getYearlyRevenue(@Query() year: string) {
     return this.orderService.getYearlyRevenue(year);
   }

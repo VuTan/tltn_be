@@ -32,10 +32,83 @@ export class ProductService {
     return product;
   }
 
-  //to do
-  findAll() {
-    return this.productModel.find();
+  async findAll(page: number, limit: number, sort: string, search: string) {
+    const skip = (page - 1) * limit;
+
+    const sortObject = this.parseSortParam(sort);
+    if (Object.keys(sortObject).length === 0) {
+      sortObject['createdAt'] = -1;
+    }
+
+    const filter: any = search
+      ? {
+        $or: [
+          { name: { $regex: search, $options: 'i' } },
+          { category: { $regex: search, $options: 'i' } },
+        ],
+      }
+      : {};
+
+    const pipeline = [
+      { $match: filter },
+      {
+        $project: {
+          name: 1,
+          price: 1,
+          category: 1,
+          stock: 1,
+          options: 1,
+          rate: 1,
+          ratings: 1,
+          imgs: 1,
+          des: 1,
+          spec: 1,
+        },
+      },
+      {
+        $addFields: {
+          stock: { $ifNull: ['$stock', { $sum: '$options.stock' }] },
+        },
+      },
+      { $skip: skip },
+      { $limit: limit },
+      { $sort: sortObject },
+    ];
+
+    const [products, total] = await Promise.all([
+      this.productModel.aggregate(pipeline).exec(),
+      this.productModel.countDocuments(filter).exec(),
+    ]);
+
+    const totalPages = Math.ceil(total / limit);
+
+    return {
+      products,
+      total,
+      totalPages,
+      currentPage: page,
+      limit,
+    };
   }
+
+
+  private parseSortParam(sort: string): Record<string, 1 | -1> {
+    const sortObject: Record<string, 1 | -1> = {};
+
+    if (sort) {
+      const sortPairs = sort.split('&');
+
+      for (const pair of sortPairs) {
+        const [field, direction] = pair.split(',');
+        if (field && (direction === 'asc' || direction === 'desc')) {
+          sortObject[field] = direction === 'asc' ? 1 : -1;
+        }
+      }
+    }
+
+    return sortObject;
+  }
+
 
   async findOne(id: string) {
     if (id === undefined) {
@@ -52,7 +125,6 @@ export class ProductService {
 
     return product;
   }
-
 
 
   async update(updateProductDto: UpdateProductDto) {
@@ -77,8 +149,55 @@ export class ProductService {
 
   findRandomProduct() {
     return this.productModel.aggregate([
-      { $sample: { size: 1 } } // Lấy ngẫu nhiên 1 sản phẩm
+      { $sample: { size: 1 } }, // Lấy ngẫu nhiên 1 sản phẩm
     ]);
   }
 
+  async getTotalProductAndStock(): Promise<{ totalProducts: number; totalStock: number }> {
+    const result = await this.productModel.aggregate([
+      {
+        $facet: {
+          totalProducts: [{ $count: 'count' }],
+          totalStock: [
+            {
+              $project: {
+                stock: 1,
+                options: 1,
+              },
+            },
+            {
+              $addFields: {
+                stock: {
+                  $ifNull: [
+                    '$stock',
+                    {
+                      $sum: {
+                        $map: {
+                          input: '$options',
+                          as: 'option',
+                          in: '$$option.stock',
+                        },
+                      },
+                    },
+                  ],
+                },
+              },
+            },
+            { $group: { _id: null, totalStock: { $sum: '$stock' } } },
+          ],
+        },
+      },
+      {
+        $project: {
+          totalProducts: { $arrayElemAt: ['$totalProducts.count', 0] },
+          totalStock: { $arrayElemAt: ['$totalStock.totalStock', 0] },
+        },
+      },
+    ]);
+
+    const totalProducts = result[0]?.totalProducts || 0;
+    const totalStock = result[0]?.totalStock || 0;
+
+    return { totalProducts, totalStock };
+  }
 }

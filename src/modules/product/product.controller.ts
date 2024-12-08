@@ -16,13 +16,14 @@ export class ProductController {
 
   @Get()
   async findAll(
-    @Query() query: string,
-    @Query('current') current: string,
-    @Query('pageSize') pageSize: string,
+    @Query('page') page = 1,
+    @Query('limit') limit = 10,
+    @Query('sort') sort = '',
+    @Query('search') search = ''
   ) {
-    // return this.productService.findAll(query, +current, +pageSize);
-    return this.productService.findAll();
+    return this.productService.findAll(+page, +limit, sort, search);
   }
+
 
   @Public()
   @Get('random')
@@ -31,20 +32,24 @@ export class ProductController {
     return this.productService.findRandomProduct();
   }
 
+  @Get('total')
+  async getTotalProductAndStock() {
+    return await this.productService.getTotalProductAndStock();
+  }
+
   @Public()
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.productService.findOne(id);
   }
 
-
   @Patch()
   update(@Body() updateProductDto: UpdateProductDto) {
     return this.productService.update(updateProductDto);
   }
 
-  @Delete()
-  remove(@Query('id') id: string) {
+  @Delete(':id')
+  remove(@Param('id') id: string) {
     return this.productService.remove(id);
   }
 }
