@@ -1,12 +1,22 @@
-import { IsEmpty, IsMongoId, IsNotEmpty, IsNumber, IsOptional, IsString, ValidateNested } from 'class-validator';
+import {
+  IsArray,
+  IsEmpty,
+  IsMongoId,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsString,
+  ValidateNested,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 import { CreateOptionDto } from '@/modules/product/dto/create-option.dto';
 import { Types } from 'mongoose';
+import { CreateSpecDto } from '@/modules/product/dto/create_spec.dto';
 
 export class CreateProductDto {
   @IsNotEmpty()
   @IsString()
-  title: string;
+  name: string;
 
   @IsNotEmpty()
   @IsNumber()
@@ -14,15 +24,27 @@ export class CreateProductDto {
 
   @IsNotEmpty()
   @IsMongoId()
-  subcategory: string;
+  category: string;
 
   @IsOptional()
   @IsNumber()
   discount: number;
 
   @IsOptional()
-  @IsString()
-  describe: string;
+  @IsNumber()
+  stock: number;
+
+  @IsOptional()
+  @IsArray()
+  spec: CreateSpecDto[];
+
+  @IsOptional()
+  @IsArray()
+  des: string[];
+
+  @IsOptional()
+  @IsArray()
+  imgs: string[];
 
   @IsOptional()
   @ValidateNested({ each: true })

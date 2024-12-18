@@ -1,7 +1,7 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateOrderItemDto } from './dto/create-order_item.dto';
 import { UpdateOrderItemDto } from './dto/update-order_item.dto';
-import { OrderItems, OrderItemDocument } from '@/modules/order_item/entities/order_item.entity';
+import { OrderItemDocument, OrderItems } from '@/modules/order_item/entities/order_item.entity';
 import { InjectModel } from '@nestjs/mongoose';
 import { Product, ProductDocument } from '@/modules/product/entities/product.entity';
 import { Model } from 'mongoose';
@@ -79,12 +79,34 @@ export class OrderItemService {
     return `This action returns all orderItem`;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} orderItem`;
+  findOne(id: string) {
+    return this.orderItemModel
+      .findById(id)
+      .populate({
+        path: 'product_id',
+        select: 'name imgs',
+      });
   }
 
-  update(id: number, updateOrderItemDto: UpdateOrderItemDto) {
-    return `This action updates a #${id} orderItem`;
+  async update(updateOrderItemDto: UpdateOrderItemDto) {
+    const { _id, ...updateData } = updateOrderItemDto;
+
+    const orderItem = await this.orderItemModel.findById(_id);
+    if (!orderItem) {
+      throw new NotFoundException(`OrderItem not found`);
+    }
+
+    try {
+      const updatedOrderItem = await this.orderItemModel.findByIdAndUpdate(
+        _id,
+        updateData,
+        { new: true, runValidators: true },
+      );
+
+      return updatedOrderItem;
+    } catch (error) {
+      throw new BadRequestException('Failed to update OrderItem', error.message);
+    }
   }
 
   remove(id: number) {

@@ -73,4 +73,9 @@ export class SupplierController {
   ) {
     return this.supplierService.getYearlyRevenueBySupplier( userId,year);
   }
+
+  @Get(':id/order-items')
+  async getOrderItems(@Param('id') user_id: string) {
+    return this.supplierService.getAllOrderItemsBySupplier(user_id);
+  }
 }

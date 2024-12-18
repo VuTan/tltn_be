@@ -12,6 +12,7 @@ import { Product, ProductDocument } from '@/modules/product/entities/product.ent
 import dayjs from 'dayjs';
 import { Order, OrderDocument } from '@/modules/order/entities/order.entity';
 import utc from 'dayjs/plugin/utc';
+import { OrderItemDocument, OrderItems } from '@/modules/order_item/entities/order_item.entity';
 
 @Injectable()
 export class SupplierService {
@@ -20,6 +21,7 @@ export class SupplierService {
     @InjectModel(User.name) private readonly userModel: Model<UserDocument>,
     @InjectModel(Product.name) private readonly productModel: Model<ProductDocument>,
     @InjectModel(Order.name) private readonly orderModel: Model<OrderDocument>,
+    @InjectModel(OrderItems.name) private readonly orderItemModel: Model<OrderItemDocument>,
     private readonly productService: ProductService,
   ) {
   }
@@ -110,7 +112,7 @@ export class SupplierService {
       .exec();
 
     if (!supplier) {
-      throw new Error('Supplier not found');
+      throw new BadRequestException('Supplier not found');
     }
 
     // Tạo filter nếu có search
@@ -251,7 +253,7 @@ export class SupplierService {
     const months = Array.from({ length: 12 }, (_, i) =>
       dayjs().utc().year(year).month(i).format('YYYY-MM'),
     );
-    console.log("data:",data)
+    console.log('data:', data);
 
     const result = months.map(month => {
       const found = data.find(d => d._id === month);
@@ -263,6 +265,23 @@ export class SupplierService {
 
     console.log(result);
     return result;
+  }
+
+  async getAllOrderItemsBySupplier(user_id: string) {
+    // Tìm nhà cung cấp theo ID và lấy product_ids
+    const supplier = await this.supplierModel.findOne({user_id});
+    console.log(supplier);
+
+    if (!supplier) {
+      throw new BadRequestException('Supplier not found');
+    }
+
+    // Lấy tất cả OrderItems có product_id nằm trong product_ids của nhà cung cấp
+    const orderItems = await this.orderItemModel
+      .find({ product_id: { $in: supplier.products } })
+      .populate('product_id', 'name');
+
+    return orderItems;
   }
 
 }

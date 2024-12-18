@@ -6,6 +6,7 @@ import { Supplier, SupplierEntity } from '@/modules/supplier/entities/supplier.e
 import { UsersModule } from '@/modules/users/users.module';
 import { ProductModule } from '@/modules/product/product.module';
 import { OrderModule } from '@/modules/order/order.module';
+import { OrderItemModule } from '@/modules/order_item/order_item.module';
 
 @Module({
   imports: [
@@ -13,6 +14,7 @@ import { OrderModule } from '@/modules/order/order.module';
     UsersModule,
     ProductModule,
     OrderModule,
+    OrderItemModule
   ],
   controllers: [SupplierController],
   providers: [SupplierService],

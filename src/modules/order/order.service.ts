@@ -88,8 +88,8 @@ export class OrderService {
     return `This action returns all order`;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} order`;
+  findOne(id: string) {
+    return this.orderModel.findById(id);
   }
 
   update(id: number, updateOrderDto: UpdateOrderDto) {

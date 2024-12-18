@@ -1,34 +1,35 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import mongoose, { Model } from 'mongoose';
 import { Product, ProductDocument } from '@/modules/product/entities/product.entity';
 import { InjectModel } from '@nestjs/mongoose';
 import { Subcategory, SubcategoryDocument } from '@/modules/subcategory/entities/subcategory.entity';
+import { Category, CategoryDocument } from '@/modules/category/entities/category.entity';
 
 @Injectable()
 export class ProductService {
   constructor(
     @InjectModel(Product.name) private readonly productModel: Model<ProductDocument>,
     @InjectModel(Subcategory.name) private subcategoryModel: Model<SubcategoryDocument>,
+    @InjectModel(Category.name) private categoryModel: Model<CategoryDocument>,
   ) {
   }
 
   async create(createProductDto: CreateProductDto) {
-    const { title, base_price, subcategory, discount, describe, options } = createProductDto;
+    const { name, base_price, spec, imgs, category, discount, des, options } = createProductDto;
 
-    const checkSubcategory = await this.subcategoryModel
-      .findOne({ '_id': { $in: subcategory } })
+    const checkSubcategory = await this.categoryModel
+      .findOne({ '_id': { $in: category } })
       .exec();
     if (!checkSubcategory) {
       throw new NotFoundException('Subcategory not found');
     }
 
     const product = await this.productModel.create({
-      title, base_price, subcategory, discount, describe, options,
+      name, base_price, spec, imgs, category, discount, des, options,
     });
 
-    console.log(product);
     return product;
   }
 
@@ -128,7 +129,25 @@ export class ProductService {
 
 
   async update(updateProductDto: UpdateProductDto) {
-    return await this.productModel.updateOne({ _id: updateProductDto._id }, { ...updateProductDto });
+    console.log(updateProductDto);
+    try {
+      const result = await this.productModel.updateOne(
+        { _id: updateProductDto._id },
+        { ...updateProductDto },
+      );
+      console.log(await this.productModel.findById(updateProductDto._id));
+
+      if (result.matchedCount === 0) {
+        throw new NotFoundException(`Product with ID ${updateProductDto._id} not found`);
+      }
+
+      return result;
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      throw new InternalServerErrorException('Failed to update the product');
+    }
   }
 
   async remove(id: string) {

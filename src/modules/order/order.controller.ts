@@ -51,7 +51,7 @@ export class OrderController {
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.orderService.findOne(+id);
+    return this.orderService.findOne(id);
   }
 
   @Patch(':id')
