@@ -23,14 +23,14 @@ export class CategoryController {
 
   @Public()
   @Get(':title/products')
-  async getAllProductsByCategory(@Param('title') title: string): Promise<Product[]> {
-    return this.categoryService.getAllProductsByCategory(title);
+  async getAllProductsByCategory(@Param('title') title: string, @Query('sort') sort: string): Promise<Product[]> {
+    return this.categoryService.getAllProductsByCategory(title, sort);
   }
 
   @Public()
   @Get(':title')
-  findProductBySubcategory(@Param('title') title: string, @Query('subcategory') subcategory: string) {
-    return this.categoryService.findBySubcategory(title, subcategory);
+  findProductBySubcategory(@Param('title') title: string, @Query('subcategory') subcategory: string, @Query('sort') sort:string) {
+    return this.categoryService.findBySubcategory(title, subcategory, sort);
   }
 
   @Public()

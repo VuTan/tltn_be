@@ -166,10 +166,10 @@ export class ProductService {
     return await this.productModel.findByIdAndDelete(id);
   }
 
-  findRandomProduct() {
+  findRandomProduct(quantity) {
     return this.productModel.aggregate([
-      { $sample: { size: 1 } }, // Lấy ngẫu nhiên 1 sản phẩm
-    ]);
+      { $sample: { size: quantity } }, // Lấy ngẫu nhiên 1 sản phẩm
+    ]).exec();
   }
 
   async getTotalProductAndStock(): Promise<{ totalProducts: number; totalStock: number }> {
@@ -218,5 +218,46 @@ export class ProductService {
     const totalStock = result[0]?.totalStock || 0;
 
     return { totalProducts, totalStock };
+  }
+
+  async checkStockByOption(products: { id: string; option: string | null; quantity: number }[]) {
+    const result = [];
+
+    for (const productData of products) {
+      const productId = new mongoose.Types.ObjectId(productData.id); // Chuyển id thành ObjectId
+
+      // Tìm sản phẩm theo productId
+      const product = await this.productModel.findById(productId).exec();
+      if (!product) {
+        throw new NotFoundException(`Product with id ${productData.id} not found`);
+      }
+
+      let stockAvailable = false;
+
+      // Kiểm tra nếu sản phẩm có option
+      if (productData.option) {
+        // Tìm option theo tên
+        const option = product.options.find(opt => opt.type === productData.option);
+        if (option && option.stock >= productData.quantity) {
+          stockAvailable = true;
+        }
+      } else {
+        // Nếu không có option, kiểm tra stock chính của sản phẩm
+        if (product.stock >= productData.quantity) {
+          stockAvailable = true;
+        }
+      }
+
+      // Thêm kết quả vào mảng
+      result.push({
+        productId: product._id,
+        name: product.name,
+        requestedQuantity: productData.quantity,
+        optionType: productData.option || 'No option',
+        availableStock: stockAvailable ? 'In stock' : 'Out of stock',
+      });
+    }
+
+    return result;
   }
 }

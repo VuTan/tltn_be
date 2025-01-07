@@ -15,8 +15,13 @@ export class SupplierController {
   }
 
   @Get()
-  findAll() {
-    return this.supplierService.findAll();
+  findAll(
+    @Query('page') page = 1,
+    @Query('limit') limit = 12,
+    @Query('sort') sort = '',
+    @Query('search') search = '',
+  ) {
+    return this.supplierService.findAll(+page, +limit, search);
   }
 
   @Get(':id')
@@ -71,7 +76,7 @@ export class SupplierController {
     @Param('userId') userId: string,
     @Query('year') year: number,
   ) {
-    return this.supplierService.getYearlyRevenueBySupplier( userId,year);
+    return this.supplierService.getYearlyRevenueBySupplier(userId, year);
   }
 
   @Get(':id/order-items')

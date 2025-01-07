@@ -5,6 +5,7 @@ import { OrderItemDocument, OrderItems } from '@/modules/order_item/entities/ord
 import { InjectModel } from '@nestjs/mongoose';
 import { Product, ProductDocument } from '@/modules/product/entities/product.entity';
 import { Model } from 'mongoose';
+import * as mongoose from 'mongoose';
 
 @Injectable()
 export class OrderItemService {
@@ -108,6 +109,9 @@ export class OrderItemService {
       throw new BadRequestException('Failed to update OrderItem', error.message);
     }
   }
+
+
+
 
   remove(id: number) {
     return `This action removes a #${id} orderItem`;

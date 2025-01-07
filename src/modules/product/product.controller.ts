@@ -27,9 +27,9 @@ export class ProductController {
 
   @Public()
   @Get('random')
-  async findRandomProduct() {
+  async findRandomProduct(@Query('quantity') quantity) {
     // return this.productService.findAll(query, +current, +pageSize);
-    return this.productService.findRandomProduct();
+    return this.productService.findRandomProduct(+quantity);
   }
 
   @Get('total')
@@ -51,5 +51,11 @@ export class ProductController {
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.productService.remove(id);
+  }
+
+  @Post('check-stock')
+  async checkStock(@Body() products: { id: string; option: string | null; quantity: number }[]) {
+    console.log('Received products:', products);
+    return this.productService.checkStockByOption(products);
   }
 }

@@ -20,6 +20,7 @@ import { OrderItemModule } from '@/modules/order_item/order_item.module';
 import { Supplier } from '@/modules/supplier/entities/supplier.entity';
 import { SupplierModule } from '@/modules/supplier/supplier.module';
 import { StatsModule } from '@/modules/stats/stats.module';
+import { VourcherModule } from '@/modules/vourcher/vourcher.module';
 
 @Module({
   imports: [
@@ -66,6 +67,7 @@ import { StatsModule } from '@/modules/stats/stats.module';
       }),
       inject: [ConfigService],
     }),
+    VourcherModule,
   ],
   controllers: [AppController],
   providers: [

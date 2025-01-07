@@ -18,7 +18,10 @@ export class User {
   phone: string;
 
   @Prop()
-  address: string;
+  home_address: string;
+
+  @Prop()
+  delivery_address: string;
 
   @Prop()
   image: string;

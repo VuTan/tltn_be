@@ -44,26 +44,45 @@ export class CategoryService {
     return this.categoryModel.find().select('title');
   }
 
-  async getAllProductsByCategory(title: string) {
-    // Tìm category theo id
+  async getAllProductsByCategory(title: string, sort: string) {
+    // Tìm category theo title
     const category = await this.categoryModel.findOne({ title }).exec();
     if (!category) {
       throw new Error('Category not found');
     }
 
     // Tìm tất cả các subcategory của category này
-    const subcategories = await this.subcategoryModel.find({
-      _id: { $in: category.subcategory }, // Tìm tất cả subcategories trong mảng subcategory của category
-    }).exec();
+    const subcategories = await this.subcategoryModel
+      .find({ _id: { $in: category.subcategory } })
+      .exec();
 
-    // Lấy tất cả sản phẩm từ các subcategories
-    const productIds = subcategories.flatMap(subcategory => subcategory.product);
+    // Lấy tất cả product IDs từ các subcategories
+    const productIds = subcategories.flatMap((subcategory) => subcategory.product);
 
-    // Lấy tất cả sản phẩm từ các productId
-    return this.productModel.find({ _id: { $in: productIds } }).exec();
+    // Lấy tất cả sản phẩm từ các productIds (dùng lean để tránh lỗi)
+    let products = await this.productModel
+      .find({ _id: { $in: productIds } })
+      .lean()
+      .exec();
+
+    // Sắp xếp sản phẩm theo yêu cầu
+    switch (sort) {
+      case"0": // Price Low to High
+         return products = products.sort((a, b) => a.price - b.price);
+      case "1": // Price High to Low
+        return products = products.sort((a, b) => b.price - a.price);
+      case "2": // A  Z
+        return products = products.sort((a, b) => a.name.localeCompare(b.name));
+      case "3": // Z - A
+        return products = products.sort((a, b) => b.name.localeCompare(a.name));
+      default:
+        return products;
+    }
+
   }
 
-  async findBySubcategory(title: string, subcategoryTitle: string) {
+
+  async findBySubcategory(title: string, subcategoryTitle: string, sort: string) {
     const result = await this.categoryModel.aggregate([
       // 1. Tìm Category theo title
       { $match: { title } },
@@ -110,7 +129,8 @@ export class CategoryService {
       throw new Error('Category or Subcategory not found');
     }
 
-    // Trả về sản phẩm của Subcategory
+    var final;
+
     return result[0].products;
   }
 

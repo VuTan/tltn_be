@@ -13,6 +13,9 @@ export class Product {
   @Prop()
   base_price: number;
 
+  @Prop()
+  price: number;
+
   @Prop({ default: 0, min: 0, max: 5 })
   rate: number;
 
@@ -30,6 +33,9 @@ export class Product {
 
   @Prop()
   options: Option[];
+
+  @Prop()
+  stock: number
 
   @Prop()
   imgs: string[];

@@ -76,7 +76,6 @@ export class UsersService {
     };
   }
 
-
   private parseSortParam(sort: string): Record<string, 1 | -1> {
 
     const sortObject: Record<string, 1 | -1> = {};
@@ -94,7 +93,6 @@ export class UsersService {
 
     return sortObject;
   }
-
 
   findOne(id: number) {
     return `This action returns a #${id} user`;

@@ -41,8 +41,31 @@ export class SupplierService {
     return supplier.save();
   }
 
-  findAll() {
-    return `This action returns all supplier`;
+  async findAll(page: number, limit: number, search: string) {
+    const skip = (page - 1) * limit;
+    const sortOptions: Record<string, 'asc' | 'desc'> = {};
+
+    const filter: any = {};
+    if (search) {
+      filter.name = { $regex: search, $options: 'i' };
+    }
+
+    const suppliers = await this.supplierModel
+      .find(filter)
+      .select('name address email phone')
+      .skip(skip)
+      .limit(limit)
+      .sort(sortOptions)
+      .exec();
+
+    const totalCount = await this.supplierModel.countDocuments(filter).exec();
+
+    return {
+      suppliers: suppliers,
+      total: totalCount,
+      page,
+      limit,
+    };
   }
 
   findOne(id: number) {

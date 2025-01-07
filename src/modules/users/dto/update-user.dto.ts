@@ -12,6 +12,9 @@ export class UpdateUserDto {
   phone: string;
 
   @IsOptional()
-  address: string;
+  home_address: string;
+
+  @IsOptional()
+  delivery_address: string;
 
 }
